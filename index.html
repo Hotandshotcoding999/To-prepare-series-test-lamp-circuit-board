@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Series Test Lamp Circuit Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .canvas-container {
+            position: relative;
+            background: #ffffff;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            max-width: 100%;
+        }
+        svg {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.test-btn {
+            background-color: #ffc107;
+            color: #333;
+        }
+        button.test-btn:hover {
+            background-color: #e0a800;
+        }
+        .status {
+            font-size: 16px;
+            font-weight: bold;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.testing {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Series Test Lamp Circuit Simulator</h1>
+    <p class="subtitle">Interactive Wiring Diagram: Switch, Socket, and Test Lamp in Series</p>
+
+    <div class="canvas-container">
+        <svg width="1050" height="680" viewBox="0 0 1050 680" id="circuitSvg">
+            <!-- Grid Background -->
+            <defs>
+                <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+                </pattern>
+            </defs>
+            <rect width="1050" height="680" fill="url(#grid)" />
+
+            <!-- Supply Rails -->
+            <!-- Line (Red) -->
+            <line x1="50" y1="60" x2="1000" y2="60" stroke="#ff4d4d" stroke-width="3" />
+            <text x="60" y="50" fill="#ff4d4d" font-weight="bold" font-size="14">Line Supply (L) - Red</text>
+
+            <!-- Neutral (Black) -->
+            <line x1="50" y1="100" x2="1000" y2="100" stroke="#333333" stroke-width="3" />
+            <text x="60" y="90" fill="#333333" font-weight="bold" font-size="14">Neutral Supply (N) - Black</text>
+
+            <!-- ================= TEST LAMP ================= -->
+            <g transform="translate(480, 35)">
+                <circle cx="45" cy="25" r="24" fill="#fff" stroke="#333" stroke-width="2" id="bulbOuter" />
+                <path d="M 37 39 Q 45 20 53 39 Z" fill="#ccc" stroke="#333" stroke-width="1.5" />
+                <text x="45" y="70" font-size="12" text-anchor="middle" font-weight="bold">Series Test Lamp</text>
+                <text x="-25" y="28" font-size="11" fill="#333" font-weight="bold">N</text>
+                <text x="85" y="28" font-size="11" fill="#ff4d4d" font-weight="bold">P</text>
+            </g>
+
+            <!-- ================= SOCKET ================= -->
+            <rect x="250" y="240" width="120" height="160" fill="#fff" stroke="#333" stroke-width="2" rx="4"/>
+            <text x="310" y="420" font-size="13" text-anchor="middle" font-weight="bold">3-Pin Socket</text>
+            <circle cx="310" cy="265" r="4" fill="#333" /> <text x="322" y="268" font-size="11">E</text>
+            <circle cx="280" cy="335" r="4" fill="#333" /> <text x="252" y="338" font-size="11">L</text>
+            <circle cx="340" cy="335" r="4" fill="#333" /> <text x="352" y="338" font-size="11">N</text>
+
+            <!-- ================= ONE WAY SWITCH ================= -->
+            <rect x="600" y="240" width="100" height="160" fill="#fff" stroke="#333" stroke-width="2" rx="4"/>
+            <text x="650" y="265" font-size="12" text-anchor="middle" font-weight="bold">One Way</text>
+            <text x="650" y="280" font-size="12" text-anchor="middle" font-weight="bold">Switch</text>
+            <circle cx="625" cy="300" r="4" fill="#333" />
+            <circle cx="625" cy="360" r="4" fill="#333" />
+            
+            <!-- Switch Blade (Interactive Group) -->
+            <g id="switchGroup" cursor="pointer" onclick="toggleSwitch()" style="pointer-events: bounding-box;">
+                <rect x="610" y="290" width="50" height="80" fill="transparent" />
+                <line x1="625" y1="300" x2="660" y2="330" stroke="#333" stroke-width="4" id="bladeLine" />
+                <circle cx="660" cy="330" r="6" fill="#007bff" />
+            </g>
+
+            <!-- ================= WIRING CONNECTIONS ================= -->
+
+            <!-- Neutral Supply to Test Lamp Left Terminal -->
+            <path d="M 200 100 L 200 60 L 480 60" fill="none" stroke="#333333" stroke-width="2.5" />
+
+            <!-- Test Lamp Right Terminal to Switch Top Terminal -->
+            <path d="M 565 60 L 750 60 L 750 300 L 629 300" fill="none" stroke="#ff4d4d" stroke-width="2.5" />
+
+            <!-- Switch Bottom Terminal to Socket Terminal L (Cleanly routed to the Left Live terminal without touching Neutral) -->
+            <path d="M 625 360 L 625 480 L 210 480 L 210 335 L 276 335" fill="none" stroke="#ff4d4d" stroke-width="2.5" />
+
+            <!-- Socket Terminal N to Main Neutral (Routed on the right side to completely avoid Live intersection) -->
+            <path d="M 340 335 L 390 335 L 390 530 L 120 530 L 120 100" fill="none" stroke="#333333" stroke-width="2.5" />
+
+            <!-- Socket Terminal E to Ground -->
+            <path d="M 310 265 L 310 190 L 900 190 L 900 480" fill="none" stroke="#28a745" stroke-width="2.5" />
+
+            <!-- Ground Symbol -->
+            <g transform="translate(900, 480)">
+                <line x1="-20" y1="0" x2="20" y2="0" stroke="#28a745" stroke-width="3" />
+                <line x1="-12" y1="6" x2="12" y2="6" stroke="#28a745" stroke-width="2.5" />
+                <line x1="-5" y1="12" x2="5" y2="12" stroke="#28a745" stroke-width="2" />
+                <text x="15" y="25" font-size="12" fill="#28a745" font-weight="bold">Ground</text>
+            </g>
+
+            <!-- Test Probe / Load Representation inside Socket -->
+            <g id="testProbeLoad" visibility="hidden">
+                <line x1="280" y1="335" x2="340" y2="335" stroke="#ff9900" stroke-width="4" stroke-dasharray="4,4" />
+            </g>
+
+            <!-- Live Current Animations -->
+            <g id="liveCurrent" visibility="hidden">
+                <path d="M 565 60 L 750 60 L 750 300 L 629 300" fill="none" stroke="#ff9900" stroke-width="4" stroke-dasharray="8,8">
+                    <animate attributeName="stroke-dashoffset" values="16;0" dur="1s" repeatCount="indefinite" />
+                </path>
+                <path id="switchSocketLine" d="M 625 360 L 625 480 L 210 480 L 210 335 L 276 335" fill="none" stroke="#ff9900" stroke-width="4" stroke-dasharray="8,8" visibility="hidden">
+                    <animate attributeName="stroke-dashoffset" values="16;0" dur="1s" repeatCount="indefinite" />
+                </path>
+            </g>
+
+        </svg>
+    </div>
+
+    <div class="controls">
+        <button onclick="toggleSwitch()">Toggle Switch ON/OFF</button>
+        <button class="test-btn" onclick="toggleTestProbe()">Plug in Test Load (Short/Device)</button>
+        <div id="statusText" class="status">Switch is OFF | Test Lamp: OFF</div>
+    </div>
+
+    <script>
+        let isSwitchOn = false;
+        let isDeviceConnected = false;
+
+        function toggleSwitch() {
+            isSwitchOn = !isSwitchOn;
+            updateCircuit();
+        }
+
+        function toggleTestProbe() {
+            isDeviceConnected = !isDeviceConnected;
+            updateCircuit();
+        }
+
+        function updateCircuit() {
+            const blade = document.getElementById('bladeLine');
+            const liveCurrent = document.getElementById('liveCurrent');
+            const switchSocketLine = document.getElementById('switchSocketLine');
+            const testProbeLoad = document.getElementById('testProbeLoad');
+            const bulbOuter = document.getElementById('bulbOuter');
+            const statusText = document.getElementById('statusText');
+
+            if (isSwitchOn) {
+                // Switch Closed position (pointing down)
+                blade.setAttribute('x1', '625');
+                blade.setAttribute('y1', '300');
+                blade.setAttribute('x2', '625');
+                blade.setAttribute('y2', '350');
+            } else {
+                // Switch Open position (angled up)
+                blade.setAttribute('x1', '625');
+                blade.setAttribute('y1', '300');
+                blade.setAttribute('x2', '660');
+                blade.setAttribute('y2', '330');
+            }
+
+            if (isDeviceConnected) {
+                testProbeLoad.setAttribute('visibility', 'visible');
+            } else {
+                testProbeLoad.setAttribute('visibility', 'hidden');
+            }
+
+            if (isSwitchOn && isDeviceConnected) {
+                bulbOuter.setAttribute('fill', '#ffeb3b');
+                liveCurrent.setAttribute('visibility', 'visible');
+                switchSocketLine.setAttribute('visibility', 'visible');
+                statusText.textContent = 'Circuit Complete! Test Lamp is GLOWING (Device working/continuity normal)';
+                statusText.className = 'status testing';
+            } else if (isSwitchOn && !isDeviceConnected) {
+                bulbOuter.setAttribute('fill', '#fff');
+                liveCurrent.setAttribute('visibility', 'visible');
+                switchSocketLine.setAttribute('visibility', 'hidden');
+                statusText.textContent = 'Switch is ON, but Socket has no load connected (Lamp OFF - Open Circuit)';
+                statusText.className = 'status active';
+            } else {
+                bulbOuter.setAttribute('fill', '#fff');
+                liveCurrent.setAttribute('visibility', 'hidden');
+                switchSocketLine.setAttribute('visibility', 'hidden');
+                statusText.textContent = 'Switch is OFF | Test Lamp: OFF';
+                statusText.className = 'status';
+            }
+        }
+    </script>
+
+</body>
+</html>
